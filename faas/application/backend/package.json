@@ -1,0 +1,21 @@
+{
+  "name": "todo-aws",
+  "version": "1.0.0",
+  "description": "todo app implementation to AWS",
+  "main": "index.js",
+  "scripts": {},
+  "author": "take4mats",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-dynamodb-autoscaling": "^0.6.2",
+    "serverless-dynamodb-local": "0.2.35",
+    "serverless-offline-python": "^3.22.0",
+    "serverless-plugin-stage-variables": "^1.7.10",
+    "serverless-prune-plugin": "^1.3.0",
+    "serverless-python-requirements": "^4.3.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {}
+}

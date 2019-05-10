@@ -1,0 +1,14 @@
+#テーマの設定
+theme : simple
+
+#ロゴアイコンの設定
+# logo : assets/logo.jpg
+
+#フットノートの設定
+footnote : "© 2019 George (@take4mats)"
+
+#スライドのページ数表示の設定
+slide-number: true
+
+#ページ遷移アニメーション (noneが安全？)
+transition: convex

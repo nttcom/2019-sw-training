@@ -1,0 +1,111 @@
+service: todo
+
+provider:
+  name: aws
+  runtime: python3.6
+  profile: ${opt:profile}  # read from CLI option --profile
+  region: ${opt:region}  # read from CLI option region
+  stage: ${opt:stage}  # read from CLI option --stage
+  logRetentionInDays: 7  # CloudWatchLog
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - dynamodb:PutItem
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:DeleteItem
+      Resource: '*'
+plugins:
+  - serverless-dynamodb-local  # enable DynamoDB local
+  - serverless-offline-python
+  - serverless-prune-plugin  # deletes old version of CloudFormation stack deployments
+  - serverless-python-requirements  # allow pip
+  - serverless-plugin-stage-variables  # for apigw logging
+
+custom:
+  dynamodb:  # configuring DynamoDB local
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:  # specifies the entries put every time DynamoDB local launches
+      development:
+        sources:
+          - table: todo-table-${self:provider.stage}-sls
+            sources: [./migrations/Todo.json]
+  prune:  # retain 3 generations of CloudFormation stack configs in S3 buckets
+    atuomatic: true
+    number: 3
+
+resources:
+  Description: ${self:provider.stage} CloudFormation stack
+  Resources:
+    DynamoDbTable:  # DynamoDB table config
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: todo-table-${self:provider.stage}-sls
+        AttributeDefinitions:  # to define only key attributes and index attributes
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:  # align with autoscaling config
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ApiGatewayRestApi:  # setting name and description of APIGW
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: todo-api-${self:provider.stage}-sls
+        Description: ${self:provider.stage} API Gateway (Lambda-proxy integration)
+    ApiGatewayStage:  # for apigw logging
+      Type: AWS::ApiGateway::stage
+      Properties:
+        MethodSettings:
+          - DataTraceEnabled: true
+            HttpMethod: "*"
+            LoggingLevel: INFO
+            ResourcePath: "/*"
+            MetricsEnabled: true
+
+functions:  # Lambda configuration
+  'todo':
+    handler: lambda_handler.lambda_handler
+    name: todo-function-${self:provider.stage}-sls
+    description: ${self:provider.stage} Lambda function
+    environment:
+      REGION_NAME: ${self:provider.region}
+      TABLE_NAME: ${self:resources.Resources.DynamoDbTable.Properties.TableName}
+    events:  # define resources one by one to save Lambda from consumption
+      - http:
+          path: /tasks
+          method: get
+          cors: true
+      - http:
+          path: /tasks
+          method: post
+          cors: true
+      - http:
+          path: /tasks/{id}
+          method: get
+          cors: true
+      - http:
+          path: /tasks/{id}
+          method: put
+          cors: true
+      - http:
+          path: /tasks/{id}
+          method: delete
+          cors: true
+
+package:  # exclude dev files first, and then include necessary files
+  exclude:
+    - '**'
+  include:
+    - 'lambda_handler.py'
+    - 'src/todo.py'
+    - 'requirements.txt'
