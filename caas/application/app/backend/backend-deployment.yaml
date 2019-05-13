@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: backend-$NAME-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: backend-$NAME-deployment
+    spec:
+      containers:
+      - name: backend-$NAME-deployment
+        image: asia.gcr.io/$PROJECT/backend-$NAME:1.0
+        ports:
+        - containerPort: 9200
+        env:
+        - name: MYSQL_IP
+          value: $IN_MYSQL_IP

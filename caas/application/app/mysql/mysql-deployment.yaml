@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql-$NAME-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: mysql-$NAME-deployment
+    spec:
+      containers:
+      - name: mysql-$NAME-deployment
+        image: asia.gcr.io/$PROJECT/mysql-$NAME:1.0
+        ports:
+        - containerPort: 3306
