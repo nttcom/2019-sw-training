@@ -1,13 +1,15 @@
-### Serverless Framework でローカルからAWSにデプロイする場合
+# Serverless Framework でローカルからAWSにデプロイする場合
 今までWebコンソールで苦労していたものが、一発で設定・デプロイ出来ます。 Infrastructure as Code!
 
-- 重要な環境の情報
+## ハンズオン環境ごとに予め決めておくパラメータ
+- 講師等の指示に従って以下のパラメータを決めてください:
     ```
-    profile: faasXX (XX 部分は自分の番号を確認)
-    stage  : faasXX (XX 部分は自分の番号を確認)
-    region : ap-southeast-1 (今回はシンガポールを全員共通にしました)
+    REGION: ____ (例: `シンガポール`, `ap-southeast-1`)
+    PROFILE: ____ (`faas01` など )
+    REGION: ____ (`faas01` など )
     ```
 
+## ハンズオン手順
 - ここでディレクトリとファイル解説
     ```
     backend/
@@ -22,10 +24,16 @@
     └── rf/  # robot framework でのテスト (参考程度)
     ```
 
+- Installation: npm と pip で一通り使うものをインストールする (pip はテストのためのライブラリをいっぱい入れている)
+    ```sh
+    npm install
+    pip install boto3 pytest robotframewrok RESTinstance
+    ```
+
 - デプロイ
     ```sh
     (このプロジェクトを git clone して faas/application/backend へ移動)
-    $ sls deploy --profile faasXX --stage faasXX --region ap-southeast-1
+    $ sls deploy --profile ${PROFILE} --stage ${STAGE} --region ${REGION}
       # パラメータは各自の環境に合わせて変更してね！
     ```
 
@@ -70,29 +78,64 @@
     - postman/curl など API 自身を叩く
     - frontend アプリも動きます。
 
-### おまけ: Serverless Framework でローカルでテスト環境を立てる（ハンズオン範囲外）
-ローカルでのテストも頑張ってみたい場合は、読んでね。ローカルに apigw, lambda, dynamodb をエミュレートして TDD できるお（完全おまけコンテンツ）
+## Test
+ユニットテスト、ローカルに AWS を再現することでテスト、更に robot framework を組み合わせて自動テスト、などのバリエーションを紹介する。
+
+### Serverless Offline
+ローカルに apigw, lambda, dynamodb をエミュレートして TDD できるお（完全おまけコンテンツ）
 
 - java 1.8 以上をインストール
 - 初回は dynamodb-local のインストールも必要
     ```sh
     # install dynamodb-local
-    sls dynamodb install --profile <your_profile_name> --stage <your_profile_name> --region <our_region_name>
+    sls dynamodb install
     # もし何かの都合でやり直したい場合、 remove dynamodb-local
-    sls dynamodb remove --profile <your_profile_name> --stage <your_profile_name> --region <our_region_name>
+    sls dynamodb remove
     ```
 
 - execute sls offline
     ```sh
-    $ sls offline start --profile <your_profile_name> --stage <your_profile_name> --region <our_region_name>
+    $ sls offline start --profile ${PROFILE} --stage ${STAGE} --region ${REGION}
     ```
 
-- これで、 http://127.0.0.1:3000 の配下に API のエンドポイントが生成され、裏ではlambda, dynamodb もエミュレートされる。
-- テスト方法は省略。
-    - 単体テスト: ちょっとどこに対してやるのか難しいところ。 src/todo.py に対してテストを書くなどが現実的か。 lambda handler を直接叩くテストは結構難しい（event, contextを完全に再現することが難しい）
-    - 結合テスト: API に対するテストをするのが良い。 robot framework 等
-        ```sh
-        cd rf/1_sls_local/
-        robot main.robot
-        ```
+- これで、 http://127.0.0.1:3000 の配下に API のエンドポイントが生成され、裏ではlambda, dynamodb もエミュレートされる。 curl などで楽しんでください。
 
+### Robot Framework でのテスト
+rotob framework とその REST API 用の拡張である RESTinstance を用いれば、ローカルの API エンドポイントに対して受入試験のように動作確認が行える。
+- ローカルでのテストのサンプルは以下:
+    ```sh
+    cd /path/to/backend/rf/1_sls_local/
+    robot main.robot
+    ```
+
+### pytest によるユニットテスト
+今回は lambda handler にパラメータを送り込んでテストを行う。
+
+- serverlss offline が起動していること
+
+- 環境変数を設定
+    ```sh
+    export REGION_NAME=${REGION}; export TABLE_NAME=todo-table-${STAGE}-sls
+    ```
+
+- テスト実行！
+    ```sh
+    pytest
+    ```
+
+- 出力例 (成功の場合):
+    ```sh
+    ============================= test session starts ==============================
+    platform darwin -- Python 3.6.5, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
+    rootdir: /Users/george/shugyo/2019-sw-training/faas/application/backend
+    collected 7 items
+
+    tests/test_sls_offline.py .......                                        [100%]
+
+    =========================== 7 passed in 3.60 seconds ===========================
+    ```
+
+- note:
+  event オブジェクト, 環境変数の設定 あたりが癖がある感じ。
+  コード規模が大きくないので、 unit test が必ずしも必要とは限らない。また、 unit といいながら DynamoDB Local が必須だし、ちょっとハードル高めでは有る。
+  本気で開発するときは pytest-watch を仕掛けて、 ファイル更新のたびに unit test が回るようにしておくとだいぶ素早く開発が進む。

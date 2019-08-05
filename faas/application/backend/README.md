@@ -127,9 +127,6 @@
 
 
 # Usage
-## 重要なパラメーター
-- our_regionname: ap-southeast-1 (東京じゃなくてシンガポール)
-- your_profile_name: faas01 -- faas40 (自分の番号で！間違うと楽しいです)
 
 ## recommended environment
 - mac or linux (2019年ハンズオンでは 1人1台 EC2 インスタンスを提供します)
@@ -140,7 +137,6 @@
     - serverless framework で offline test, deploy するのに必要
     - それより新しくても動くかも
 
-
 ## Installation
 - npm と pip で一通り使うものをインストールする (pip はテストのためのライブラリをいっぱい入れている)
     ```sh
@@ -148,7 +144,7 @@
     pip install boto3 pytest robotframewrok RESTinstance
     ```
 
-## test
+## Test
 ユニットテスト、ローカルに AWS を再現することでテスト、更に robot framework を組み合わせて自動テスト、などのバリエーションを紹介する。
 
 ### Serverless Offline
@@ -165,7 +161,7 @@
 
 - execute sls offline
     ```sh
-    $ sls offline start --profile <your_profile_name> --stage <your_profile_name> --region <our_region_name>
+    $ sls offline start --profile <your_profile_name> --stage <your_stage_name> --region <our_region_name>
     ```
 
 - これで、 http://127.0.0.1:3000 の配下に API のエンドポイントが生成され、裏ではlambda, dynamodb もエミュレートされる。 curl などで楽しんでください。
@@ -185,7 +181,7 @@ rotob framework とその REST API 用の拡張である RESTinstance を用い�
 
 - 環境変数を設定
     ```sh
-    export REGION_NAME=<our_region_name>; export TABLE_NAME=todo-table-<your_profile_name>-sls
+    export REGION_NAME=<our_region_name>; export TABLE_NAME=todo-table-<your_stage_name>-sls
     ```
 
 - テスト実行！
@@ -193,7 +189,7 @@ rotob framework とその REST API 用の拡張である RESTinstance を用い�
     pytest
     ```
 
-- 出力 (成功の場合):
+- 出力例 (成功の場合):
     ```sh
     ============================= test session starts ==============================
     platform darwin -- Python 3.6.5, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
@@ -209,3 +205,11 @@ rotob framework とその REST API 用の拡張である RESTinstance を用い�
   event オブジェクト, 環境変数の設定 あたりが癖がある感じ。
   コード規模が大きくないので、 unit test が必ずしも必要とは限らない。また、 unit といいながら DynamoDB Local が必須だし、ちょっとハードル高めでは有る。
   本気で開発するときは pytest-watch を仕掛けて、 ファイル更新のたびに unit test が回るようにしておくとだいぶ素早く開発が進む。
+
+## Deployment
+- sls deploy コマンドでできます。
+    ```sh
+    $ sls deploy --profile <your_profile_name> --stage <your_stage_name> --region <our_region_name>
+    ```
+
+- deploy後は出来上がったAPI-Gatewayのエンドポイントに対して curl するなり RobotFramework をそこに向けるなりして動作確認してみてください。
