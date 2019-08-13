@@ -27,7 +27,7 @@
 - Installation: npm と pip で一通り使うものをインストールする (pip はテストのためのライブラリをいっぱい入れている)
     ```sh
     npm install
-    pip install boto3 pytest robotframewrok RESTinstance
+    pip install boto3 pytest robotframework RESTinstance
     ```
 
 - デプロイ
@@ -120,18 +120,23 @@ rotob framework とその REST API 用の拡張である RESTinstance を用い�
 
 - テスト実行！
     ```sh
-    pytest
+    pytest -v
     ```
 
 - 出力例 (成功の場合):
     ```sh
     ============================= test session starts ==============================
     platform darwin -- Python 3.6.5, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
+    cachedir: .pytest_cache
     rootdir: /Users/george/shugyo/2019-sw-training/faas/application/backend
     collected 7 items
-
-    tests/test_sls_offline.py .......                                        [100%]
-
+    application/backend/tests/test_sls_offline.py::test_POST PASSED          [ 14%]
+    application/backend/tests/test_sls_offline.py::test_GET_0 PASSED         [ 28%]
+    application/backend/tests/test_sls_offline.py::test_PUT PASSED           [ 42%]
+    application/backend/tests/test_sls_offline.py::test_GET_1 PASSED         [ 57%]
+    application/backend/tests/test_sls_offline.py::test_LIST PASSED          [ 71%]
+    application/backend/tests/test_sls_offline.py::test_DELETE_0 PASSED      [ 85%]
+    application/backend/tests/test_sls_offline.py::test_GET_404 PASSED       [100%]
     =========================== 7 passed in 3.60 seconds ===========================
     ```
 
