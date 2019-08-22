@@ -26,21 +26,22 @@
 
 - Installation: npm と pip で一通り使うものをインストールする (pip はテストのためのライブラリをいっぱい入れている)
     ```sh
-    npm install
-    pip install boto3 pytest robotframework RESTinstance
+    # faas/application/backend で作業
+    $ npm install
+    $ pip install boto3 pytest robotframework RESTinstance
     ```
 
 - デプロイ
     ```sh
-    (このプロジェクトを git clone して faas/application/backend へ移動)
+    # faas/application/backend で作業
     $ sls deploy --profile ${PROFILE} --stage ${STAGE} --region ${REGION}
       # パラメータは各自の環境に合わせて変更してね！
     ```
 
 - 出力例 ( profile & stage: `demo`, region: `ap-southeast-1`, 解説を `# foobar` で )
     ```sh
-    (このプロジェクトの faas/application/backend で作業)
-    $ sls deploy --profile demo  # 実行！
+    # faas/application/backend で作業
+    $ sls deploy --profile demo --stage demo --region ap-southeast-1  # 実行！
     Serverless: Packaging service...
     Serverless: Excluding development dependencies...
     Serverless: Uploading CloudFormation file to S3...
@@ -87,10 +88,11 @@
 - java 1.8 以上をインストール
 - 初回は dynamodb-local のインストールも必要
     ```sh
-    # install dynamodb-local
-    sls dynamodb install
+    # dynamodb-local をインストール
+    $ sls dynamodb install --profile ${PROFILE} --stage ${STAGE} --region ${REGION}
+
     # もし何かの都合でやり直したい場合、 remove dynamodb-local
-    sls dynamodb remove
+    $ sls dynamodb remove --profile ${PROFILE} --stage ${STAGE} --region ${REGION}
     ```
 
 - execute sls offline
@@ -104,8 +106,8 @@
 rotob framework とその REST API 用の拡張である RESTinstance を用いれば、ローカルの API エンドポイントに対して受入試験のように動作確認が行える。
 - ローカルでのテストのサンプルは以下:
     ```sh
-    cd /path/to/backend/rf/1_sls_local/
-    robot main.robot
+    $ cd /path/to/backend/rf/1_sls_local/
+    $ robot main.robot
     ```
 
 ### pytest によるユニットテスト
@@ -115,12 +117,12 @@ rotob framework とその REST API 用の拡張である RESTinstance を用い�
 
 - 環境変数を設定
     ```sh
-    export REGION_NAME=${REGION}; export TABLE_NAME=todo-table-${STAGE}-sls
+    $ export REGION_NAME=${REGION}; export TABLE_NAME=todo-table-${STAGE}-sls
     ```
 
 - テスト実行！
     ```sh
-    pytest -v
+    $ pytest -v
     ```
 
 - 出力例 (成功の場合):
