@@ -82,6 +82,45 @@
 ## Test
 ユニットテスト、ローカルに AWS を再現することでテスト、更に robot framework を組み合わせて自動テスト、などのバリエーションを紹介する。
 
+### pytest によるユニットテスト
+今回は lambda handler にパラメータを送り込んでテストを行う。
+
+- serverlss offline が起動していること
+
+- 環境変数を設定
+    ```sh
+    # backend/ にて作業
+    $ export REGION_NAME=${REGION}; export TABLE_NAME=todo-table-${STAGE}-sls
+    ```
+
+- テスト実行！
+    ```sh
+    # backend/ にて作業
+    $ pytest -v
+    ```
+
+- 出力例 (成功の場合):
+    ```sh
+    ============================= test session starts ==============================
+    platform darwin -- Python 3.6.5, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
+    cachedir: .pytest_cache
+    rootdir: /Users/george/shugyo/2019-sw-training/faas/application/backend
+    collected 7 items
+    application/backend/tests/test_sls_offline.py::test_POST PASSED          [ 14%]
+    application/backend/tests/test_sls_offline.py::test_GET_0 PASSED         [ 28%]
+    application/backend/tests/test_sls_offline.py::test_PUT PASSED           [ 42%]
+    application/backend/tests/test_sls_offline.py::test_GET_1 PASSED         [ 57%]
+    application/backend/tests/test_sls_offline.py::test_LIST PASSED          [ 71%]
+    application/backend/tests/test_sls_offline.py::test_DELETE_0 PASSED      [ 85%]
+    application/backend/tests/test_sls_offline.py::test_GET_404 PASSED       [100%]
+    =========================== 7 passed in 3.60 seconds ===========================
+    ```
+
+- note:
+  event オブジェクト, 環境変数の設定 あたりに癖がある感じ。
+  コード規模が大きくないので、 unit test が必ずしも必要とは限らない。また、 unit といいながら DynamoDB Local が必須だし、ちょっとハードル高めでは有る。
+  本気で開発するときは pytest-watch を仕掛けて、 ファイル更新のたびに unit test が回るようにしておくとだいぶ素早く開発が進む。
+
 ### Serverless Offline
 ローカルに apigw, lambda, dynamodb をエミュレートして TDD できるお（完全おまけコンテンツ）
 
@@ -106,43 +145,6 @@
 rotob framework とその REST API 用の拡張である RESTinstance を用いれば、ローカルの API エンドポイントに対して受入試験のように動作確認が行える。
 - ローカルでのテストのサンプルは以下:
     ```sh
-    $ cd /path/to/backend/rf/1_sls_local/
+    # backend/rf/1_sls_local/ にて作業
     $ robot main.robot
     ```
-
-### pytest によるユニットテスト
-今回は lambda handler にパラメータを送り込んでテストを行う。
-
-- serverlss offline が起動していること
-
-- 環境変数を設定
-    ```sh
-    $ export REGION_NAME=${REGION}; export TABLE_NAME=todo-table-${STAGE}-sls
-    ```
-
-- テスト実行！
-    ```sh
-    $ pytest -v
-    ```
-
-- 出力例 (成功の場合):
-    ```sh
-    ============================= test session starts ==============================
-    platform darwin -- Python 3.6.5, pytest-5.0.1, py-1.8.0, pluggy-0.12.0
-    cachedir: .pytest_cache
-    rootdir: /Users/george/shugyo/2019-sw-training/faas/application/backend
-    collected 7 items
-    application/backend/tests/test_sls_offline.py::test_POST PASSED          [ 14%]
-    application/backend/tests/test_sls_offline.py::test_GET_0 PASSED         [ 28%]
-    application/backend/tests/test_sls_offline.py::test_PUT PASSED           [ 42%]
-    application/backend/tests/test_sls_offline.py::test_GET_1 PASSED         [ 57%]
-    application/backend/tests/test_sls_offline.py::test_LIST PASSED          [ 71%]
-    application/backend/tests/test_sls_offline.py::test_DELETE_0 PASSED      [ 85%]
-    application/backend/tests/test_sls_offline.py::test_GET_404 PASSED       [100%]
-    =========================== 7 passed in 3.60 seconds ===========================
-    ```
-
-- note:
-  event オブジェクト, 環境変数の設定 あたりが癖がある感じ。
-  コード規模が大きくないので、 unit test が必ずしも必要とは限らない。また、 unit といいながら DynamoDB Local が必須だし、ちょっとハードル高めでは有る。
-  本気で開発するときは pytest-watch を仕掛けて、 ファイル更新のたびに unit test が回るようにしておくとだいぶ素早く開発が進む。

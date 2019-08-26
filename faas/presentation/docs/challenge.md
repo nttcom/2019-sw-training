@@ -27,12 +27,27 @@
 ## 実施手順
 - 各自のec2インスタンスにログイン
 
-- 試験ツールのディレクトリに移動
+- 試験ツールの整備 (講師が環境を用意している場合はスキップ)
     ```sh
-    $ cd ~/2019nttcomtraining/faas/application/bench/gatling-charts-highcharts-bundle-2.3.0
+    # gatling-charts-highcharts-bundle-2.3.0 をダウンロード
+    $ cd ~
+    $ curl -O https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/2.3.0/gatling-charts-highcharts-bundle-2.3.0-bundle.zip
+    $ unzip gatling-charts-highcharts-bundle-2.3.0-bundle.zip
+
+    # 本repositoryにあるスクリプトをコピー
+    $ cp ~/2019-sw-training/faas/application/bench/gatling-charts-highcharts-bundle-2.3.0/bin/* ~/gatling-charts-highcharts-bundle-2.3.0/bin/
+    $ cp ~/2019-sw-training/faas/application/bench/gatling-charts-highcharts-bundle-2.3.0/user-files/simulations/* ~/gatling-charts-highcharts-bundle-2.3.0/user-files/simulations/
+
+    # ホスト名とstage名を揃える (sls deploy した APIGW の URL と gatling のアクセス先を揃えるため。変なアプローチなので handson.scala をいじってくれてもOK)
+    hostname <stage名>
     ```
 
-- `user-files/simulations/handson.scala` の以下の部分を編集し、試験の向け先を **「sls で作成した自分の API」** に修正する
+- 試験ツールのディレクトリに移動
+    ```sh
+    $ cd ~/gatling-charts-highcharts-bundle-2.3.0  # 環境により異なる場合がございます
+    ```
+
+- `gatling-charts-highcharts-bundle-2.3.0/user-files/simulations/handson.scala` の以下の部分を編集し、試験の向け先を **「sls で作成した自分の API」** に修正する
     ```scala
     val httpConf = http
        .baseURL("https://hogehoge.execute-api.ap-southeast-1.amazonaws.com/")  // ここを sls で作成した自分の API に修正する
